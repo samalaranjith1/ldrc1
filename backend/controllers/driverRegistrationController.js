@@ -1,10 +1,10 @@
 const asyncWrapper = require("../middleware/async");
 const { createCustomError } = require("../errors/custom-error");
-const driverRegistration = require("../models/driverRegistration");
+const DriverRegistrationSchema = require("../models/driverRegistration");
 const driverRegistration = asyncWrapper(async (req, res) => {
   const { email, password } = req.body;
   try {
-    const check = await agentDetails.findOne(
+    const check = await DriverRegistrationSchema.findOne(
       { email: email },
       { email: 1, password: 1 }
     );
