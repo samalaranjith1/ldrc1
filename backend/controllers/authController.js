@@ -64,3 +64,8 @@ module.exports = {
   authLogin,
   authSignup,
 };
+
+// need to implement forgot password feature , basically it has to check below things
+// 1.check whether account is present or not
+// 2. if account existed then send OTP to reset password, on verification of OTP details has to updated in the database
+// 3. if account details not existed ,throw an error to register for new account

@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const authRouter = require("./routes/authRoutes");
+const driverRegistrationRouter = require("./routes/driverRegistrationRoutes");
 
 const connectDB = require("./db/connect");
 require("dotenv").config();
@@ -25,6 +26,8 @@ app.use((req, res, next) => {
 });
 
 app.use("/auth", authRouter);
+app.use("/driverregistration", driverRegistrationRouter);
+driverRegistrationRouter;
 
 app.use(notFound);
 app.use(errorHandlerMiddleware);
