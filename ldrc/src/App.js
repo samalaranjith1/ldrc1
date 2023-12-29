@@ -10,6 +10,7 @@ import BottomFooter from "./components/BottomFooter";
 import PaymentDetails from "./components/PaymentDetails";
 import Search from "./components/Search";
 import DriverRegistration from "./components/DriverRegistration";
+import RCDetails from "./components/RCDetails";
 
 function App() {
   const handleResize = () => {
@@ -31,6 +32,7 @@ function App() {
         <Route exact path="/home" element={<Home />} />
         <Route path="/auth/signup" element={<SignUp />} />
         <Route path="/uploads" element={<DriverRegistration />} />
+        <Route path="/rcdetails" element={<RCDetails />} />
         <Route path="/auth/login" element={<Login />} />
         <Route path="/contactus" element={<ContactUs />} />
         <Route path="/paymentdetails" element={<PaymentDetails />} />

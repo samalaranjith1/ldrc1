@@ -10,6 +10,7 @@ const fs = require("fs");
 //routes
 const authRouter = require("./routes/authRoutes");
 const driverRegistrationRouter = require("./routes/driverRegistrationRoutes");
+const rcDetailsRouter = require("./routes/rcDetailsRoutes");
 
 const connectDB = require("./db/connect");
 require("dotenv").config();
@@ -47,6 +48,7 @@ cloudinary.config({
 
 app.use("/auth", authRouter);
 app.use("/uploads", driverRegistrationRouter);
+app.use("/rcdetails", rcDetailsRouter);
 
 // app.use(notFound);
 app.use(errorHandlerMiddleware);

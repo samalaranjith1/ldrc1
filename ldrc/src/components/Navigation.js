@@ -24,6 +24,9 @@ function Navigation() {
               <LinkContainer to="/uploads">
                 <Nav.Link href="/uploads">DriverRegistration</Nav.Link>
               </LinkContainer>
+              <LinkContainer to="/rcdetails">
+                <Nav.Link href="/rcdetails">RCDetails</Nav.Link>
+              </LinkContainer>
               <LinkContainer to="/search">
                 <Nav.Link href="/search">Search</Nav.Link>
               </LinkContainer>

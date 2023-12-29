@@ -11,14 +11,7 @@ const { uploadProductImage } = require("../controllers/uploadsController");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-require("dotenv").config();
 
-const cloudinary = require("cloudinary").v2;
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
-});
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const text = __dirname;
