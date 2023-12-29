@@ -1,6 +1,8 @@
 const asyncWrapper = require("../middleware/async");
 const { createCustomError } = require("../errors/custom-error");
+
 const agentDetails = require("../models/agentDetails");
+
 const authLogin = asyncWrapper(async (req, res) => {
   const { email, password } = req.body;
   try {
