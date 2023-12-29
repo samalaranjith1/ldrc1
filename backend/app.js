@@ -50,7 +50,7 @@ app.use("/auth", authRouter);
 app.use("/uploads", driverRegistrationRouter);
 app.use("/rcdetails", rcDetailsRouter);
 
-// app.use(notFound);
+app.use(notFound);
 app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT || 8080;
