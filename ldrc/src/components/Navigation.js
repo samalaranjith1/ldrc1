@@ -21,16 +21,11 @@ function Navigation() {
               <LinkContainer to="/paymentdetails">
                 <Nav.Link href="/paymentdetails">Payment Details</Nav.Link>
               </LinkContainer>
-              <LinkContainer to="/driverregistration">
-                <Nav.Link href="/driverregistration">
-                  DriverRegistration
-                </Nav.Link>
+              <LinkContainer to="/uploads">
+                <Nav.Link href="/uploads">DriverRegistration</Nav.Link>
               </LinkContainer>
               <LinkContainer to="/search">
                 <Nav.Link href="/search">Search</Nav.Link>
-              </LinkContainer>
-              <LinkContainer to="/fileupload1">
-                <Nav.Link href="/fileupload1">Upload</Nav.Link>
               </LinkContainer>
             </Nav>
             <Nav>
