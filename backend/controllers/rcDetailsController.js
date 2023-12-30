@@ -5,6 +5,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 require("dotenv").config();
+const userList = require("../models/userList");
 
 const cloudinary = require("cloudinary").v2;
 cloudinary.config({

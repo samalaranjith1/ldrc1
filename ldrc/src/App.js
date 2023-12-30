@@ -11,6 +11,8 @@ import PaymentDetails from "./components/PaymentDetails";
 import Search from "./components/Search";
 import DriverRegistration from "./components/DriverRegistration";
 import RCDetails from "./components/RCDetails";
+import { jwtDecode } from "jwt-decode";
+import AuthLogin from "./components/AuthLogin";
 
 function App() {
   const handleResize = () => {
@@ -24,8 +26,19 @@ function App() {
   useEffect(() => {
     window.addEventListener("resize", handleResize);
   });
+
+  let authError = "";
+  try {
+    const token = localStorage.getItem("token");
+    const decoded = jwtDecode(token);
+  } catch (error) {
+    authError = error;
+    console.log("InvalidTokenError: Invalid token specified:", error);
+  }
+
   return (
     <Router>
+      {authError && <AuthLogin />}
       <Navigation />
       <Routes>
         {/* <Route path="/" element={<Navigation />} /> */}

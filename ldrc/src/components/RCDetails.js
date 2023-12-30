@@ -6,6 +6,9 @@ import FormGroup from "react-bootstrap/esm/FormGroup";
 import FormControl from "react-bootstrap/FormControl";
 import Button from "react-bootstrap/esm/Button";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import Blink from "react-blink-text";
+import AuthLogin from "./AuthLogin";
 
 function RCDetails() {
   const [formData, setFormData] = useState({
@@ -34,12 +37,24 @@ function RCDetails() {
     setRCPhoto(e.target.files[0]);
   };
 
+  let authError = "";
+  try {
+    const token = localStorage.getItem("token");
+    const decoded = jwtDecode(token);
+    console.log(decoded);
+  } catch (error) {
+    authError = error;
+    console.log("InvalidTokenError: Invalid token specified:", error);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     console.log(formData, rcPhoto, "at line 34");
 
     const formFilesData = new FormData();
     formFilesData.append("file", rcPhoto);
+
+    const token = localStorage.getItem("token");
 
     try {
       await axios
@@ -52,6 +67,7 @@ function RCDetails() {
           {
             headers: {
               "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
             },
           }
         )
@@ -76,6 +92,7 @@ function RCDetails() {
           console.log(error.response.data);
         });
     } catch (error) {
+      localStorage.removeItem("token");
       console.log("Error occured Home catch block" + error);
     }
   }
@@ -235,9 +252,24 @@ function RCDetails() {
             onClick={handleSubmit}
             variant="warning"
             size="sm"
+            disabled={authError ? true : false}
           >
             Submit
           </Button>
+          <Blink
+            fontSize="24px"
+            text={
+              authError && (
+                <>
+                  <span style={{ color: "red", fontWeight: "bold" }}>
+                    <a href="/auth/login">Please Login Again</a>for driver
+                    registration
+                  </span>
+                </>
+              )
+            }
+          ></Blink>
+          {authError && <AuthLogin />}
         </div>
       </Form>
     </Container>

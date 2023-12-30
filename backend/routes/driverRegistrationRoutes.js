@@ -12,6 +12,8 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+const authMiddleware = require("../middleware/auth");
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const text = __dirname;
@@ -32,8 +34,9 @@ const cpUpload = upload.fields([
   { name: "driverLicensePhoto" },
 ]);
 
-router.route("/").post(
+router.route("/").get(authMiddleware).post(
   cpUpload,
+  authMiddleware,
   driverRegistration
   // asyncWrapper(async (req, res) => {
   //   const aadharPhoto = await cloudinary.uploader.upload(

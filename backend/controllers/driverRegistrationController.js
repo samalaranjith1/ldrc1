@@ -5,6 +5,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 require("dotenv").config();
+const userList = require("../models/userList");
 
 const cloudinary = require("cloudinary").v2;
 cloudinary.config({
@@ -43,12 +44,19 @@ const driverRegistration = asyncWrapper(async (req, res) => {
   data.panCardPhoto = panCardPhoto.secure_url;
   data.driverLicensePhoto = driverLicensePhoto.secure_url;
   const { emailAddress, phoneNumber } = req.body;
+
+  const userListData = {
+    username: data.emailAddress,
+    phoneNumber: data.phoneNumber,
+    role: "driver",
+  };
   try {
     const check = await driverRegistrations.findOne({ phoneNumber });
     if (check) {
       res.json("exist");
     } else {
       await driverRegistrations.insertMany([data]);
+      await userList.create(userListData);
       res.json("notexist");
     }
   } catch (e) {

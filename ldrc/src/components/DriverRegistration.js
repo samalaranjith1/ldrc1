@@ -6,6 +6,9 @@ import FormGroup from "react-bootstrap/esm/FormGroup";
 import FormControl from "react-bootstrap/FormControl";
 import Button from "react-bootstrap/esm/Button";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import Blink from "react-blink-text";
+import AuthLogin from "./AuthLogin";
 
 function DriverRegistration() {
   const [formData, setFormData] = useState({
@@ -51,6 +54,16 @@ function DriverRegistration() {
   const handleFileChange3 = (e) => {
     setDriverLicensePhoto(e.target.files[0]);
   };
+  let authError = "";
+  try {
+    const token = localStorage.getItem("token");
+    const decoded = jwtDecode(token);
+    console.log(decoded);
+  } catch (error) {
+    authError = error;
+    console.log("InvalidTokenError: Invalid token specified:", error);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     console.log(formData, aadharPhoto, "at line 34");
@@ -59,6 +72,8 @@ function DriverRegistration() {
     formFilesData.append("file", aadharPhoto);
     formFilesData.append("file1", panCardPhoto);
     formFilesData.append("file1", driverLicensePhoto);
+
+    const token = localStorage.getItem("token");
 
     try {
       await axios
@@ -73,6 +88,7 @@ function DriverRegistration() {
           {
             headers: {
               "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
             },
           }
         )
@@ -93,11 +109,11 @@ function DriverRegistration() {
         })
         .catch((error) => {
           console.log(error);
-
           alert("wrong details");
           console.log(error.response.data);
         });
     } catch (error) {
+      localStorage.removeItem("token");
       console.log("Error occured Home catch block" + error);
     }
   }
@@ -359,60 +375,30 @@ function DriverRegistration() {
             </FormGroup>
             <div style={{ padding: "2px" }}></div>
           </div>
-          {/* <FormGroup>
-            <FormControl
-              type="text"
-              placeholder="rcNumber"
-              id="rcNumber"
-              name="rcNumber"
-              value={formData.rcNumber}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <div style={{ padding: "2px", color: "red" }}>
-            Upload RC slip below
-          </div>{" "}
-          <FormGroup>
-            <FormControl
-              type="file"
-              placeholder="rcPhoto"
-              id="rcPhoto"
-              name="rcPhoto"
-              value={formData.rcPhoto}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <div style={{ padding: "2px" }}></div>
-          <FormGroup>
-            <FormControl
-              type="text"
-              placeholder="extraInput2"
-              id="extraInput2"
-              name="extraInput2"
-              value={formData.extraInput2}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <div style={{ padding: "2px" }}></div>
-          <FormGroup>
-            <FormControl
-              type="text"
-              placeholder="extraInput3"
-              id="extraInput3"
-              name="extraInput3"
-              value={formData.extraInput3}
-              onChange={handleChange}
-            />
-          </FormGroup> */}
           <div style={{ padding: "2px" }}></div>
           <Button
             type="submit"
             onClick={handleSubmit}
             variant="warning"
             size="sm"
+            disabled={authError ? true : false}
           >
             Register
           </Button>
+          <Blink
+            fontSize="24px"
+            text={
+              authError && (
+                <>
+                  <span style={{ color: "red", fontWeight: "bold" }}>
+                    <a href="/auth/login">Please Login Again</a>for driver
+                    registration
+                  </span>
+                </>
+              )
+            }
+          ></Blink>
+          {authError && <AuthLogin />}
         </div>
       </Form>
     </Container>

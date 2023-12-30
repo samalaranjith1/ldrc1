@@ -7,6 +7,8 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+const authMiddleware = require("../middleware/auth");
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const text = __dirname;
@@ -23,6 +25,9 @@ const upload = multer({ storage: storage });
 
 const cpUpload = upload.fields([{ name: "rcPhoto" }]);
 
-router.route("/").post(cpUpload, rcDetailsController);
+router
+  .route("/")
+  .get(authMiddleware)
+  .post(cpUpload, authMiddleware, rcDetailsController);
 
 module.exports = router;
