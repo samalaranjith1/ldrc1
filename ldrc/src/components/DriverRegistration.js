@@ -6,6 +6,9 @@ import FormGroup from "react-bootstrap/esm/FormGroup";
 import FormControl from "react-bootstrap/FormControl";
 import Button from "react-bootstrap/esm/Button";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import Blink from "react-blink-text";
+import AuthLogin from "./AuthLogin";
 
 function DriverRegistration() {
   const [formData, setFormData] = useState({
@@ -17,11 +20,11 @@ function DriverRegistration() {
     eaOtp: "", //email otp has to entered after clicking submit this field has to enabled
     upiAddress: "",
     aadharNumber: "",
-    aadharPhoto: "",
+    // aadharPhoto: "",
     panCardNumber: "",
-    panCardPhoto: "",
+    // panCardPhoto: "",
     driverPhoneNumber: "",
-    driverLicensePhoto: "",
+    // driverLicensePhoto: "",
     addressVillage: "",
     addressMondal: "",
     addressDistrict: "",
@@ -31,68 +34,64 @@ function DriverRegistration() {
     extraInput2: "",
     extraInput3: "",
   });
-  const [file, setFile] = useState(null);
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+  const [aadharPhoto, setAadharPhoto] = useState(null);
+  const [panCardPhoto, setPanCardPhoto] = useState(null);
+  const [driverLicensePhoto, setDriverLicensePhoto] = useState(null);
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, files } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: e.target.type === "text" ? value : files[0],
     });
   };
+  const handleFileChange1 = (e) => {
+    setAadharPhoto(e.target.files[0]);
+  };
+  const handleFileChange2 = (e) => {
+    setPanCardPhoto(e.target.files[0]);
+  };
+  const handleFileChange3 = (e) => {
+    setDriverLicensePhoto(e.target.files[0]);
+  };
+  let authError = "";
+  try {
+    const token = localStorage.getItem("token");
+    const decoded = jwtDecode(token);
+    console.log(decoded);
+  } catch (error) {
+    authError = error;
+    console.log("InvalidTokenError: Invalid token specified:", error);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
-    console.log(formData, "at line 34");
-    const {
-      agentId,
-      driverName,
-      phoneNumber,
-      pnOtp,
-      emailAddress,
-      eaOtp,
-      aadharNumber,
-      aadharPhoto,
-      panCardNumber,
-      panCardPhoto,
-      driverPhoneNumber,
-      driverLicensePhoto,
-      addressVillage,
-      addressMondal,
-      addressDistrict,
-      addressState,
-      addressCountry,
-      addressPincode,
-      extraInput2,
-      extraInput3,
-    } = formData;
+    console.log(formData, aadharPhoto, "at line 34");
 
-    console.log(formData, "at line 60");
+    const formFilesData = new FormData();
+    formFilesData.append("file", aadharPhoto);
+    formFilesData.append("file1", panCardPhoto);
+    formFilesData.append("file1", driverLicensePhoto);
+
+    const token = localStorage.getItem("token");
+
     try {
       await axios
-        .post("http://localhost:8080/driverregistration/", {
-          agentId,
-          driverName,
-          phoneNumber,
-          pnOtp,
-          emailAddress,
-          eaOtp,
-          aadharNumber,
-          aadharPhoto,
-          panCardNumber,
-          panCardPhoto,
-          driverPhoneNumber,
-          driverLicensePhoto,
-          addressVillage,
-          addressMondal,
-          addressDistrict,
-          addressState,
-          addressCountry,
-          addressPincode,
-          extraInput2,
-          extraInput3,
-        })
+        .post(
+          "http://localhost:8080/uploads/",
+          {
+            formData,
+            aadharPhoto,
+            panCardPhoto,
+            driverLicensePhoto,
+          },
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
         .then(async (res) => {
           console.log(formData, "at line 76");
           if (res.data == "exist") {
@@ -109,10 +108,12 @@ function DriverRegistration() {
           }
         })
         .catch((error) => {
+          console.log(error);
           alert("wrong details");
           console.log(error.response.data);
         });
     } catch (error) {
+      localStorage.removeItem("token");
       console.log("Error occured Home catch block" + error);
     }
   }
@@ -128,9 +129,9 @@ function DriverRegistration() {
       <Form
         inline
         size="sm"
-        action="/home"
-        method="POST"
-        encType="multipart/form-data"
+        // action="/home"
+        // method="POST"
+        // encType="multipart/form-data"
       >
         <div
           style={{
@@ -217,6 +218,17 @@ function DriverRegistration() {
           <FormGroup>
             <FormControl
               type="text"
+              placeholder="upiAddress"
+              id="upiAddress"
+              name="upiAddress"
+              value={formData.upiAddress}
+              onChange={handleChange}
+            />
+          </FormGroup>
+          <div style={{ padding: "2px" }}></div>
+          <FormGroup>
+            <FormControl
+              type="text"
               placeholder="aadharNumber"
               id="aadharNumber"
               name="aadharNumber"
@@ -228,13 +240,15 @@ function DriverRegistration() {
             Upload aadhar card below
           </div>
           <FormGroup>
+            <Form.Label htmlFor="aadharPhoto">Aadhar Card Image</Form.Label>
             <FormControl
               type="file"
               placeholder="aadharPhoto"
               id="aadharPhoto"
               name="aadharPhoto"
+              accept="image/*"
               //   value={formData.aadharPhoto}
-              onChange={handleFileChange}
+              onChange={handleFileChange1}
             />
           </FormGroup>
           <div style={{ padding: "2px" }}></div>
@@ -252,13 +266,15 @@ function DriverRegistration() {
             Upload pan card below
           </div>
           <FormGroup>
+            <Form.Label htmlFor="panCardPhoto">Pan Card Image</Form.Label>
             <FormControl
               type="file"
               placeholder="panCardPhoto"
               id="panCardPhoto"
               name="panCardPhoto"
-              value={formData.panCardPhoto}
-              onChange={handleChange}
+              accept="image/*"
+              // value={formData.panCardPhoto}
+              onChange={handleFileChange2}
             />
           </FormGroup>
           <div style={{ padding: "2px" }}></div>
@@ -266,13 +282,17 @@ function DriverRegistration() {
             Upload pan card below
           </div>
           <FormGroup>
+            <Form.Label htmlFor="driverLicensePhoto">
+              Driving License Image
+            </Form.Label>
             <FormControl
               type="file"
               placeholder="driverLicensePhoto"
               id="driverLicensePhoto"
               name="driverLicensePhoto"
-              value={formData.driverLicensePhoto}
-              onChange={handleChange}
+              accept="image/*"
+              // value={formData.driverLicensePhoto}
+              onChange={handleFileChange3}
             />
           </FormGroup>
           <div style={{ padding: "2px" }}></div>
@@ -355,60 +375,30 @@ function DriverRegistration() {
             </FormGroup>
             <div style={{ padding: "2px" }}></div>
           </div>
-          <FormGroup>
-            <FormControl
-              type="text"
-              placeholder="rcNumber"
-              id="rcNumber"
-              name="rcNumber"
-              value={formData.rcNumber}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <div style={{ padding: "2px", color: "red" }}>
-            Upload RC slip below
-          </div>{" "}
-          <FormGroup>
-            <FormControl
-              type="file"
-              placeholder="rcPhoto"
-              id="rcPhoto"
-              name="rcPhoto"
-              value={formData.rcPhoto}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <div style={{ padding: "2px" }}></div>
-          <FormGroup>
-            <FormControl
-              type="text"
-              placeholder="extraInput2"
-              id="extraInput2"
-              name="extraInput2"
-              value={formData.extraInput2}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <div style={{ padding: "2px" }}></div>
-          <FormGroup>
-            <FormControl
-              type="text"
-              placeholder="extraInput3"
-              id="extraInput3"
-              name="extraInput3"
-              value={formData.extraInput3}
-              onChange={handleChange}
-            />
-          </FormGroup>
           <div style={{ padding: "2px" }}></div>
           <Button
             type="submit"
             onClick={handleSubmit}
             variant="warning"
             size="sm"
+            disabled={authError ? true : false}
           >
             Register
           </Button>
+          <Blink
+            fontSize="24px"
+            text={
+              authError && (
+                <>
+                  <span style={{ color: "red", fontWeight: "bold" }}>
+                    <a href="/auth/login">Please Login Again</a>for driver
+                    registration
+                  </span>
+                </>
+              )
+            }
+          ></Blink>
+          {authError && <AuthLogin />}
         </div>
       </Form>
     </Container>

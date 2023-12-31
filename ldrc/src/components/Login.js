@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/esm/Container";
@@ -16,6 +16,11 @@ function Login() {
     email: "",
     password: "",
   });
+  useEffect(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -34,8 +39,10 @@ function Login() {
         })
         .then((res) => {
           console.log(res);
-          if (res.data === "exist") {
+          if (res.data.msg === "exist") {
             alert("User successfully logged in");
+            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("role", res.data.role);
             navigate("/home", { state: { id: email } });
           } else if (res.data === "invalid_password") {
             alert(
@@ -47,6 +54,8 @@ function Login() {
         })
         .catch((e) => {
           alert("wrong details");
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
           console.log(e);
         });
     } catch (error) {
@@ -54,7 +63,7 @@ function Login() {
     }
   }
   const handleSignup = (e) => {
-    navigate("/signup");
+    navigate("/auth/signup");
   };
   const min = (a, b) => {
     if (a > b) {
