@@ -13,7 +13,7 @@ const DataDisplayComponent = ({ data }) => {
     rcNumber,
     upiAddress,
     rcPhoto,
-    paymentScreenshots,
+    paymentScreenshot,
   } = data;
 
   return (
@@ -62,16 +62,14 @@ const DataDisplayComponent = ({ data }) => {
         </ListGroupItem>
         <ListGroupItem>
           <strong>Payment Screenshots:</strong>
-          {paymentScreenshots &&
-            paymentScreenshots.map((screenshot, index) => (
-              <Image
-                key={index}
-                src={screenshot}
-                alt={`Payment Screenshot ${index + 1}`}
-                rounded
-                style={{ maxWidth: "100%", margin: "5px" }}
-              />
-            ))}
+          {paymentScreenshot && (
+            <Image
+              src={paymentScreenshot}
+              alt={`Payment Screenshot ${paymentScreenshot + 1}`}
+              rounded
+              style={{ maxWidth: "100%", margin: "5px" }}
+            />
+          )}
         </ListGroupItem>
       </ListGroup>
     </Card>

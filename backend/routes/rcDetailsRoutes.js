@@ -36,5 +36,5 @@ router
   .get(authMiddleware)
   .post(cpUpload, authMiddleware, rcDetailsController);
 
-router.route("/:searchId").get(authMiddleware, rcDetailsDashboard);
+router.route("/:searchId/:skip").get(authMiddleware, rcDetailsDashboard);
 module.exports = router;

@@ -15,15 +15,17 @@ cloudinary.config({
 });
 
 const rcDetailsDashboard = asyncWrapper(async (req, res) => {
-  const { searchId } = req.params;
+  const { searchId, skip } = req.params;
   try {
-    const task = await rcDetails.find({ driverEmail: searchId });
+    const task = rcDetails.find({ driverEmail: searchId });
     if (!task) {
       return next(
         createCustomError(`No agent details with id : ${searchId}`, 404)
       );
     }
-    res.status(200).json({ data: task });
+    result = task.skip(skip * 4).limit(4);
+    const data = await result;
+    res.status(200).json({ data: data });
   } catch (error) {
     console.log(error);
   }

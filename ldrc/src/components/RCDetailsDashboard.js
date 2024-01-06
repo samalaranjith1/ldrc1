@@ -5,11 +5,14 @@ import axios from "axios";
 
 function RCDetailsDashboard({ searchId }) {
   const [data, setData] = useState("");
-  const handleGetData = async () => {
+  const handleGetData = async (skip) => {
     const token = localStorage.getItem("token");
     try {
+      if (skip === undefined) {
+        skip = 0;
+      }
       const res = await axios.get(
-        `http://localhost:8080/rcdetails/${searchId}`,
+        `http://localhost:8080/rcdetails/${searchId}/${skip}`,
         {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -31,19 +34,61 @@ function RCDetailsDashboard({ searchId }) {
 
   const [show, setShow] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
   const handleClick = (item) => {
     setShow((value) => !value);
     setShowModal((value) => !value);
+    setSelectedItem(item);
+
     if (item == "close") {
       handleCloseModal(item);
     }
   };
   const handleCloseModal = (a) => {
+    setSelectedItem(null);
+
     setShowModal(false);
     setShow(false);
   };
+
+  const dataMaxLength = 16;
+  const pages = 16 / 4;
+  const [skip, setSkip] = useState(0);
+  const handlePrev = () => {
+    if (skip == 0) {
+      setSkip(0);
+    } else {
+      setSkip((item) => item - 1);
+    }
+  };
+  const handleNext = () => {
+    if (skip === pages - 1) {
+      setSkip(skip);
+    } else {
+      setSkip((item) => item + 1);
+    }
+  };
+  useEffect(() => {
+    console.log(skip);
+    handleGetData(skip);
+  }, [skip]);
   return (
     <>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          paddingBottom: "10px",
+        }}
+      >
+        <div style={{}}>
+          <Button onClick={handlePrev}>Prev</Button>
+          {`from ${skip * 4 + 1} to ${skip * 4 + 4} out of ${dataMaxLength}`}
+          <Button onClick={handleNext}>Next</Button>
+        </div>
+      </div>
       <div
         style={{
           display: "flex",
@@ -83,8 +128,10 @@ function RCDetailsDashboard({ searchId }) {
               <br />
               <strong>Payment Way:</strong> {item.paymentWay}
               <br />
-              <Button onClick={() => handleClick(item)}>More</Button>
-              <Modal
+              <Button key={index} onClick={() => handleClick(item)}>
+                More
+              </Button>
+              {/* <Modal
                 show={showModal}
                 onHide={handleCloseModal}
                 fullscreen={false}
@@ -100,12 +147,29 @@ function RCDetailsDashboard({ searchId }) {
                     move back
                   </Button>
                 </Modal.Footer>
-              </Modal>
+              </Modal> */}
             </div>
 
             // </li>
           ))}
       </div>
+      {selectedItem !== null && (
+        <Modal show={selectedItem !== null} onHide={handleCloseModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>{data[selectedItem]}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>Modal content for {data[selectedItem]}</p>
+            <ShowRCDetails data={selectedItem} />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
+      {`from ${skip + 1} to ${skip + 1} out of ${pages}`}
     </>
   );
 }
