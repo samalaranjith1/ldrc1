@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import RCDetails from "./RCDetails";
 import { Button, Modal, Form } from "react-bootstrap";
 import ShowRCDetails from "./ShowRCDetails";
 import axios from "axios";
