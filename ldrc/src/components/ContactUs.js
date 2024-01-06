@@ -9,6 +9,7 @@ import FormLabel from "react-bootstrap/esm/FormLabel";
 import Modal from "react-bootstrap/Modal";
 import AuthLogin from "./AuthLogin";
 import { jwtDecode } from "jwt-decode";
+import TicketsTracker from "./TicketsTracker";
 
 function ContactUs() {
   const [label, setLabel] = useState(false);
@@ -16,6 +17,7 @@ function ContactUs() {
     name: "",
     email: "",
     phoneNumber: "",
+    subject: "",
     message: "",
   });
   const handleChange = (e) => {
@@ -93,6 +95,7 @@ function ContactUs() {
             Contact us
           </Button>
           {authError && <AuthLogin />}
+          <TicketsTracker />
 
           <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
@@ -148,6 +151,18 @@ function ContactUs() {
               <Form.Group>
                 {label && <FormLabel>Message</FormLabel>}
                 <Form.Control
+                  type="text"
+                  placeholder="subject"
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                />
+              </Form.Group>
+              <div style={{ padding: "2px" }}></div>
+              <Form.Group>
+                {label && <FormLabel>Message</FormLabel>}
+                <Form.Control
                   as="textarea"
                   rows={5}
                   type="textarea"
@@ -159,27 +174,6 @@ function ContactUs() {
                 />
               </Form.Group>
               <div style={{ padding: "2px" }}></div>
-
-              {/* <Form>
-                <Form.Group
-                  className="mb-3"
-                  controlId="exampleForm.ControlInput1"
-                >
-                  <Form.Label>Email address</Form.Label>
-                  <Form.Control
-                    type="email"
-                    placeholder="name@example.com"
-                    autoFocus
-                  />
-                </Form.Group>
-                <Form.Group
-                  className="mb-3"
-                  controlId="exampleForm.ControlTextarea1"
-                >
-                  <Form.Label>Example textarea</Form.Label>
-                  <Form.Control as="textarea" rows={3} />
-                </Form.Group>
-              </Form> */}
             </Modal.Body>
             <Modal.Footer>
               <Button variant="secondary" onClick={handleClose}>

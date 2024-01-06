@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import Container from "react-bootstrap/esm/Container";
 import Form from "react-bootstrap/esm/Form";
@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Modal from "react-bootstrap/Modal";
 
-function SignUp() {
+function SignUp({ searchId, data }) {
   const navigate = useNavigate("");
   const [label, setLabel] = useState(false);
   const [emailChangeAlert, setEmailChangeAlert] = useState(false);
@@ -27,6 +27,27 @@ function SignUp() {
     password: "",
     confirmPassword: "",
   });
+  const [edit, setEdit] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const [remove, setRemove] = useState(false);
+  const handleGetData = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/auth/signup/${searchId}`
+      );
+      setFormData(res.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (searchId) {
+      handleGetData();
+      setUpdate(true);
+    }
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -63,42 +84,58 @@ function SignUp() {
               password,
               confirmPassword,
             } = formData;
-            try {
-              await axios
-                .post("http://localhost:8080/auth/signup", {
-                  name,
-                  email,
-                  phoneNumber,
-                  addressCountry,
-                  addressState,
-                  addressDistrict,
-                  districtRegistrationNumber,
-                  password,
-                  confirmPassword,
-                })
-                .then(async (res) => {
-                  console.log(res);
-                  if (res.data == "exist") {
-                    if (
-                      alert("Details submitted,please wait for confirmation")
-                    ) {
-                      navigate("/auth/login", { state: formData });
-                    } else {
-                      handleShow();
-                      setEmailChangeAlert(true);
-                    }
-                  } else if (res.data === "notexist") {
-                    alert("Details submitted,please wait for confirmation");
-                    alert("User registration successful, please login");
-                    navigate("/auth/login", { state: formData });
+            console.log(formData, "data");
+            if (update) {
+              try {
+                const res = await axios.patch(
+                  `http://localhost:8080/auth/signup/${searchId}`,
+                  {
+                    formData,
                   }
-                })
-                .catch((error) => {
-                  alert("wrong details");
-                  console.log(error.stack.message);
-                });
-            } catch (error) {
-              console.log("Error occured signup catch block" + error);
+                );
+                setFormData(res.data.data);
+              } catch (error) {
+                console.log(error);
+              }
+            }
+            if (!update) {
+              try {
+                await axios
+                  .post("http://localhost:8080/auth/signup", {
+                    name,
+                    email,
+                    phoneNumber,
+                    addressCountry,
+                    addressState,
+                    addressDistrict,
+                    districtRegistrationNumber,
+                    password,
+                    confirmPassword,
+                  })
+                  .then(async (res) => {
+                    console.log(res);
+                    if (res.data == "exist") {
+                      if (
+                        alert("Details submitted,please wait for confirmation")
+                      ) {
+                        navigate("/auth/login", { state: formData });
+                      } else {
+                        handleShow();
+                        setEmailChangeAlert(true);
+                      }
+                    } else if (res.data === "notexist") {
+                      alert("Details submitted,please wait for confirmation");
+                      alert("User registration successful, please login");
+                      navigate("/auth/login", { state: formData });
+                    }
+                  })
+                  .catch((error) => {
+                    alert("wrong details");
+                    console.log(error.stack.message);
+                  });
+              } catch (error) {
+                console.log("Error occured signup catch block" + error);
+              }
             }
             // navigate("/login", { state: formData });
           } else {
@@ -129,7 +166,10 @@ function SignUp() {
     navigate("/auth/login", { replace: true });
   };
   return (
-    <Container expand="sm">
+    <Container
+      expand="sm"
+      className={searchId && formData._id == undefined && "d-none"}
+    >
       <Form inline size="sm" onSubmit={handleSubmit} action="POST">
         <div
           style={{
@@ -146,7 +186,9 @@ function SignUp() {
             minWidth: min("80vw", "300px"),
           }}
         >
-          <h2 className="bg-white">SignUp</h2>
+          {update && <h2 className="bg-white">Update</h2>}
+
+          {!update && <h2 className="bg-white">SignUp</h2>}
           <FormGroup>
             {label && <Form.Label>Name</Form.Label>}
             <FormControl
@@ -162,12 +204,14 @@ function SignUp() {
           <FormGroup>
             {label && <Form.Label>Email</Form.Label>}
             <FormControl
+              style={{ color: update ? "red" : "" }}
               type="email"
               placeholder="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
+              disabled={update ? true : false}
             />
             {formData.email &&
               !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(
@@ -266,27 +310,39 @@ function SignUp() {
             />
           </FormGroup>
           <div style={{ padding: "2px" }}></div>
-
-          <Button
-            type="submit"
-            onClick={handleSubmit}
-            variant="warning"
-            size="sm"
-          >
-            SignUp
-          </Button>
-          <label>
-            Already have account
-            <span>
-              <Button variant="warning" size="sm" onClick={handleLogin}>
-                Login
+          {update ? (
+            <Button
+              type="submit"
+              onClick={handleSubmit}
+              variant="warning"
+              size="sm"
+            >
+              Update
+            </Button>
+          ) : (
+            <>
+              <Button
+                type="submit"
+                onClick={handleSubmit}
+                variant="warning"
+                size="sm"
+              >
+                SignUp
               </Button>
-            </span>
-          </label>
+              <label>
+                Already have account
+                <span>
+                  <Button variant="warning" size="sm" onClick={handleLogin}>
+                    Login
+                  </Button>
+                </span>
+              </label>
+            </>
+          )}
           <Modal show={show} onHide={handleClose}>
-            <Modal.Header closeButton>
-              <Modal.Title>Modal heading</Modal.Title>
-            </Modal.Header>
+            {/* <Modal.Header closeButton>
+              <Modal.TitleModal.Title>
+            </Modal.Header> */}
             <Modal.Body>
               "User already exists, Click ok to login , click Cancel to use
               different email"

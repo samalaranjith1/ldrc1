@@ -12,10 +12,13 @@ const RcDetailsSchema = new mongoose.Schema({
     required: [true, "Please enter secret key"],
     maxlength: [3, "Please enter valid secret key"],
   },
+  driverEmail: {
+    type: String,
+    required: [true, "Please enter driver email"],
+  },
   driverPhoneNumber: {
     type: String,
     required: [true, "Please enter driver phone number"],
-    unique: true,
     maxlength: [10, "Please enter valid phone number without country code"],
   },
   driverName: {
@@ -45,6 +48,19 @@ const RcDetailsSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please enter upiAddress"],
     maxlength: [30, "Please enter valid upiAddress"],
+  },
+  confirmUpiAddress: {
+    type: String,
+    required: [true, "Please enter upiAddress"],
+    maxlength: [30, "Please enter valid upiAddress"],
+  },
+  paymentWay: {
+    type: String,
+    required: [true, "Please enter paymentWay"],
+    // maxlength: [30, "Please enter valid upiAddress"],
+  },
+  paymentScreenshot: {
+    type: String,
   },
   extraInput2: {
     type: String,

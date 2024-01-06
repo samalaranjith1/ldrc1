@@ -96,11 +96,49 @@ const authSignup = asyncWrapper(async (req, res) => {
     res.json("fail");
   }
 });
+
+const getAgentDetails = asyncWrapper(async (req, res, next) => {
+  const { searchId } = req.params;
+  try {
+    const task = await agentDetails.findOne({ email: searchId });
+    if (!task) {
+      return next(
+        createCustomError(`No agent details with id : ${searchId}`, 404)
+      );
+    }
+    res.status(200).json({ data: task });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+const updateAgentDetails = asyncWrapper(async (req, res, next) => {
+  const { searchId } = req.params;
+
+  const task = await agentDetails.findOneAndUpdate(
+    { email: searchId },
+    req.body.formData,
+    {
+      new: true,
+      runValidators: true,
+      returnOriginal: false,
+    }
+  );
+  if (!task) {
+    return next(
+      createCustomError(`No agent details with id : ${searchId}`, 404)
+    );
+  }
+
+  res.status(200).json({ data: task });
+});
+
 module.exports = {
   authLogin,
   authSignup,
+  getAgentDetails,
+  updateAgentDetails,
 };
-
 // need to implement forgot password feature , basically it has to check below things
 // 1.check whether account is present or not
 // 2. if account existed then send OTP to reset password, on verification of OTP details has to updated in the database

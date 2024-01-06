@@ -14,6 +14,20 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
 });
 
+const rcDetailsDashboard = asyncWrapper(async (req, res) => {
+  const { searchId } = req.params;
+  try {
+    const task = await rcDetails.find({ driverEmail: searchId });
+    if (!task) {
+      return next(
+        createCustomError(`No agent details with id : ${searchId}`, 404)
+      );
+    }
+    res.status(200).json({ data: task });
+  } catch (error) {
+    console.log(error);
+  }
+});
 const rcDetailsController = asyncWrapper(async (req, res) => {
   const rcPhoto = await cloudinary.uploader.upload(req.files.rcPhoto[0].path, {
     use_filename: true,
@@ -22,16 +36,22 @@ const rcDetailsController = asyncWrapper(async (req, res) => {
   fs.unlinkSync(req.files.rcPhoto[0].path);
 
   const data = { ...req.body.formData };
+  console.log(data);
+
   data.rcPhoto = rcPhoto.secure_url;
 
-  const {
-    agentId,
-    secretKey,
-    driverName,
-    aadharNumber,
-    upiAddress,
-    driverPhoneNumber,
-  } = req.body;
+  if (data.paymentWay === "OnlineTransfer") {
+    const paymentScreenshot = await cloudinary.uploader.upload(
+      req.files.paymentScreenshot[0].path,
+      {
+        use_filename: true,
+        folder: "rc-images",
+      }
+    );
+    fs.unlinkSync(req.files.paymentScreenshot[0].path);
+    data.paymentScreenshot = paymentScreenshot.secure_url;
+  }
+
   try {
     // const check = await rcDetails.findOne({ phoneNumber });
     // if (check) {
@@ -41,12 +61,13 @@ const rcDetailsController = asyncWrapper(async (req, res) => {
     res.json("Details Submitted");
     // }
   } catch (e) {
-    res.json(e);
+    res.json(e.response.message);
   }
 });
 
 module.exports = {
   rcDetailsController,
+  rcDetailsDashboard,
 };
 
 // driver details has a feature to edit his details

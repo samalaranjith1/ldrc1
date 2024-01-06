@@ -51,7 +51,7 @@ const driverRegistration = asyncWrapper(async (req, res) => {
     role: "driver",
   };
   try {
-    const check = await driverRegistrations.findOne({ phoneNumber });
+    const check = await driverRegistrations.findOne({ username });
     if (check) {
       res.json("exist");
     } else {
@@ -63,6 +63,100 @@ const driverRegistration = asyncWrapper(async (req, res) => {
     res.json(e);
   }
 });
+
+const getDriverDetails = asyncWrapper(async (req, res, next) => {
+  const { searchId } = req.params;
+  try {
+    const task = await driverRegistrations.findOne({ emailAddress: searchId });
+    if (!task) {
+      return next(
+        createCustomError(`No agent details with id : ${searchId}`, 404)
+      );
+    }
+    res.status(200).json({ data: task });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+const updateDriverDetails = asyncWrapper(async (req, res, next) => {
+  const { searchId } = req.params;
+  const data = { ...req.body.formData };
+
+  console.log(req.params);
+  try {
+    if (req.files.aadharPhoto) {
+      const aadharPhoto = await cloudinary.uploader.upload(
+        req.files.aadharPhoto[0].path,
+        {
+          use_filename: true,
+          folder: "file-upload",
+        }
+      );
+      fs.unlinkSync(req.files.aadharPhoto[0].path);
+      data.aadharPhoto = aadharPhoto.secure_url;
+      console.log(data.aadharPhoto);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  try {
+    if (req.files.panCardPhoto) {
+      const panCardPhoto = await cloudinary.uploader.upload(
+        req.files.panCardPhoto[0].path,
+        {
+          use_filename: true,
+          folder: "file-upload",
+        }
+      );
+      fs.unlinkSync(req.files.panCardPhoto[0].path);
+      data.panCardPhoto = panCardPhoto.secure_url;
+      console.log(data.panCardPhoto);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  try {
+    if (req.files.driverLicensePhoto) {
+      const driverLicensePhoto = await cloudinary.uploader.upload(
+        req.files.driverLicensePhoto[0].path,
+        {
+          use_filename: true,
+          folder: "file-upload",
+        }
+      );
+      fs.unlinkSync(req.files.driverLicensePhoto[0].path);
+      data.driverLicensePhoto = driverLicensePhoto.secure_url;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  const task = await driverRegistrations.findOneAndUpdate(
+    { emailAddress: searchId },
+    data,
+    {
+      new: true,
+      runValidators: true,
+      returnOriginal: false,
+    }
+  );
+  if (!task) {
+    return next(
+      createCustomError(`No agent details with id : ${searchId}`, 404)
+    );
+  }
+
+  res.status(200).json({ data: task });
+});
+
+module.exports = {
+  driverRegistration,
+  getDriverDetails,
+  updateDriverDetails,
+};
 //    async (req, res) => {
 //   const {
 //     agentId,
@@ -134,9 +228,5 @@ const driverRegistration = asyncWrapper(async (req, res) => {
 //   const driverDetails = await DriverRegistrationModel.create(req.body);
 //   res.status(StatusCodes.CREATED).json({ driverDetails });
 // };
-
-module.exports = {
-  driverRegistration,
-};
 
 // driver details has a feature to edit his details
