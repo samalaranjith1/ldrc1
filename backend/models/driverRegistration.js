@@ -15,7 +15,6 @@ const DriverRegistrationSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
     required: [true, "Please enter proper phone number"],
-    unique: true,
     maxlength: [10, "Please enter valid phone number without country code"],
   },
   pnOtp: {

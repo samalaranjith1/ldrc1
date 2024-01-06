@@ -1,16 +1,17 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Container from "react-bootstrap/esm/Container";
 import Form from "react-bootstrap/esm/Form";
 import FormGroup from "react-bootstrap/esm/FormGroup";
 import FormControl from "react-bootstrap/FormControl";
 import Button from "react-bootstrap/esm/Button";
+import Image from "react-bootstrap/esm/Image";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import Blink from "react-blink-text";
 import AuthLogin from "./AuthLogin";
 
-function DriverRegistration() {
+function DriverRegistration({ searchId }) {
   const [formData, setFormData] = useState({
     agentId: "", // coming from backend
     driverName: "", // as per govt id
@@ -35,8 +36,12 @@ function DriverRegistration() {
     extraInput3: "",
   });
   const [aadharPhoto, setAadharPhoto] = useState(null);
+  const [aadharDisplayUrl, setAddharDisplayUrl] = useState(null);
   const [panCardPhoto, setPanCardPhoto] = useState(null);
+  const [panDisplayUrl, setPanDisplayUrl] = useState(null);
+
   const [driverLicensePhoto, setDriverLicensePhoto] = useState(null);
+  const [dlDisplayUrl, setDlDisplayUrl] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -47,12 +52,47 @@ function DriverRegistration() {
   };
   const handleFileChange1 = (e) => {
     setAadharPhoto(e.target.files[0]);
+    const file = e.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        setAddharDisplayUrl(e.target.result);
+      };
+
+      reader.readAsDataURL(file);
+    }
+    console.log(aadharPhoto);
   };
+
   const handleFileChange2 = (e) => {
     setPanCardPhoto(e.target.files[0]);
+    const file = e.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        setPanDisplayUrl(e.target.result);
+      };
+
+      reader.readAsDataURL(file);
+    }
   };
   const handleFileChange3 = (e) => {
     setDriverLicensePhoto(e.target.files[0]);
+    const file = e.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        setDlDisplayUrl(e.target.result);
+      };
+
+      reader.readAsDataURL(file);
+    }
   };
   let authError = "";
   try {
@@ -64,6 +104,32 @@ function DriverRegistration() {
     console.log("InvalidTokenError: Invalid token specified:", error);
   }
 
+  const [edit, setEdit] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const [remove, setRemove] = useState(false);
+
+  const handleGetData = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(`http://localhost:8080/uploads/${searchId}`, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setFormData(res.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (searchId) {
+      handleGetData();
+      setUpdate(true);
+    }
+  }, []);
+
   async function handleSubmit(e) {
     e.preventDefault();
     console.log(formData, aadharPhoto, "at line 34");
@@ -74,11 +140,12 @@ function DriverRegistration() {
     formFilesData.append("file1", driverLicensePhoto);
 
     const token = localStorage.getItem("token");
+    console.log(token);
 
-    try {
-      await axios
-        .post(
-          "http://localhost:8080/uploads/",
+    if (update) {
+      try {
+        const res = await axios.patch(
+          `http://localhost:8080/uploads/${searchId}`,
           {
             formData,
             aadharPhoto,
@@ -91,30 +158,54 @@ function DriverRegistration() {
               Authorization: `Bearer ${token}`,
             },
           }
-        )
-        .then(async (res) => {
-          console.log(formData, "at line 76");
-          if (res.data == "exist") {
-            if (alert("Details submitted,please wait for confirmation")) {
-              // navigate("/login", { state: formData });
-            } else {
-              // handleShow();
-              // setEmailChangeAlert(true);
+        );
+        setFormData(res.data.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    if (!update) {
+      try {
+        await axios
+          .post(
+            "http://localhost:8080/uploads/",
+            {
+              formData,
+              aadharPhoto,
+              panCardPhoto,
+              driverLicensePhoto,
+            },
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${token}`,
+              },
             }
-          } else if (res.data === "notexist") {
-            alert("Details submitted,please wait for confirmation");
-            alert("User registration successful, please login");
-            // navigate("/login", { state: formData });
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-          alert("wrong details");
-          console.log(error.response.data);
-        });
-    } catch (error) {
-      localStorage.removeItem("token");
-      console.log("Error occured Home catch block" + error);
+          )
+          .then(async (res) => {
+            console.log(formData, "at line 76");
+            if (res.data == "exist") {
+              if (alert("Details submitted,please wait for confirmation")) {
+                // navigate("/login", { state: formData });
+              } else {
+                // handleShow();
+                // setEmailChangeAlert(true);
+              }
+            } else if (res.data === "notexist") {
+              alert("Details submitted,please wait for confirmation");
+              alert("User registration successful, please login");
+              // navigate("/login", { state: formData });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            alert("wrong details");
+            console.log(error.response.data);
+          });
+      } catch (error) {
+        localStorage.removeItem("token");
+        console.log("Error occured Home catch block" + error);
+      }
     }
   }
   const min = (a, b) => {
@@ -125,7 +216,10 @@ function DriverRegistration() {
     }
   };
   return (
-    <Container expand="sm">
+    <Container
+      expand="sm"
+      className={searchId && formData._id == undefined && "d-none"}
+    >
       <Form
         inline
         size="sm"
@@ -148,7 +242,9 @@ function DriverRegistration() {
             minWidth: min("80vw", "300px"),
           }}
         >
-          <h2 className="bg-white">Driver Registration</h2>
+          {update && <h2 className="bg-white">Update</h2>}
+          {!update && <h2 className="bg-white">Driver Registration</h2>}
+
           <FormGroup>
             <FormControl
               type="text"
@@ -195,12 +291,14 @@ function DriverRegistration() {
           <div style={{ padding: "2px" }}></div>
           <FormGroup>
             <FormControl
+              style={{ color: update ? "red" : "" }}
               type="text"
               placeholder="emailAddress"
               id="emailAddress"
               name="emailAddress"
               value={formData.emailAddress}
               onChange={handleChange}
+              disabled={update ? true : false}
             />
           </FormGroup>
           <div style={{ padding: "2px" }}></div>
@@ -252,6 +350,44 @@ function DriverRegistration() {
             />
           </FormGroup>
           <div style={{ padding: "2px" }}></div>
+          {formData.aadharPhoto && (
+            <div>
+              <Image
+                src={formData.aadharPhoto}
+                style={{ width: "300px", height: "200px", display: "inline" }}
+                alt="aadhar image"
+              ></Image>
+              <span
+                style={{ display: "inline" }}
+                onClick={() => {
+                  setFormData({ ...formData, aadharPhoto: "" });
+                  setAddharDisplayUrl("");
+                }}
+              >
+                <Button variant="danger">X</Button>
+              </span>
+            </div>
+          )}
+          {aadharDisplayUrl && (
+            <div>
+              <Image
+                src={
+                  formData.aadharPhoto ? formData.aadharPhoto : aadharDisplayUrl
+                }
+                style={{ width: "300px", height: "200px", display: "inline" }}
+                alt="aadhar image"
+              ></Image>
+              <span
+                style={{ display: "inline" }}
+                onClick={() => {
+                  setAddharDisplayUrl("");
+                }}
+              >
+                <Button variant="danger">X</Button>
+              </span>
+            </div>
+          )}
+          <div style={{ padding: "2px" }}></div>
           <FormGroup>
             <FormControl
               type="text"
@@ -278,6 +414,44 @@ function DriverRegistration() {
             />
           </FormGroup>
           <div style={{ padding: "2px" }}></div>
+          {formData.panCardPhoto && (
+            <div>
+              <Image
+                src={formData.panCardPhoto}
+                style={{ width: "300px", height: "200px", display: "inline" }}
+                alt="pan image"
+              ></Image>
+              <span
+                style={{ display: "inline" }}
+                onClick={() => {
+                  setFormData({ ...formData, panCardPhoto: "" });
+                  setPanDisplayUrl("");
+                }}
+              >
+                <Button variant="danger">X</Button>
+              </span>
+            </div>
+          )}
+          {panDisplayUrl && (
+            <div>
+              <Image
+                src={
+                  formData.panCardPhoto ? formData.panCardPhoto : panDisplayUrl
+                }
+                style={{ width: "300px", height: "200px", display: "inline" }}
+                alt="pan image"
+              ></Image>
+              <span
+                style={{ display: "inline" }}
+                onClick={() => {
+                  setPanDisplayUrl("");
+                }}
+              >
+                <Button variant="danger">X</Button>
+              </span>
+            </div>
+          )}
+          <div style={{ padding: "2px" }}></div>
           <div style={{ padding: "2px", color: "red" }}>
             Upload pan card below
           </div>
@@ -295,6 +469,46 @@ function DriverRegistration() {
               onChange={handleFileChange3}
             />
           </FormGroup>
+          <div style={{ padding: "2px" }}></div>
+          {formData.driverLicensePhoto && (
+            <div>
+              <Image
+                src={formData.driverLicensePhoto}
+                style={{ width: "300px", height: "200px", display: "inline" }}
+                alt="driving license image"
+              ></Image>
+              <span
+                style={{ display: "inline" }}
+                onClick={() => {
+                  setFormData({ ...formData, driverLicensePhoto: "" });
+                  setDlDisplayUrl("");
+                }}
+              >
+                <Button variant="danger">X</Button>
+              </span>
+            </div>
+          )}
+          {dlDisplayUrl && (
+            <div>
+              <Image
+                src={
+                  formData.driverLicensePhoto
+                    ? formData.driverLicensePhoto
+                    : dlDisplayUrl
+                }
+                style={{ width: "300px", height: "200px", display: "inline" }}
+                alt="pan image"
+              ></Image>
+              <span
+                style={{ display: "inline" }}
+                onClick={() => {
+                  setDlDisplayUrl("");
+                }}
+              >
+                <Button variant="danger">X</Button>
+              </span>
+            </div>
+          )}
           <div style={{ padding: "2px" }}></div>
           <FormGroup>
             <FormControl
@@ -376,15 +590,26 @@ function DriverRegistration() {
             <div style={{ padding: "2px" }}></div>
           </div>
           <div style={{ padding: "2px" }}></div>
-          <Button
-            type="submit"
-            onClick={handleSubmit}
-            variant="warning"
-            size="sm"
-            disabled={authError ? true : false}
-          >
-            Register
-          </Button>
+          {update ? (
+            <Button
+              type="submit"
+              onClick={handleSubmit}
+              variant="warning"
+              size="sm"
+            >
+              Update
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              onClick={handleSubmit}
+              variant="warning"
+              size="sm"
+              disabled={authError ? true : false}
+            >
+              Register
+            </Button>
+          )}
           <Blink
             fontSize="24px"
             text={

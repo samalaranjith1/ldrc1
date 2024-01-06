@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-const { rcDetailsController } = require("../controllers/rcDetailsController");
+const {
+  rcDetailsController,
+  rcDetailsDashboard,
+} = require("../controllers/rcDetailsController");
 
 const multer = require("multer");
 const path = require("path");
@@ -23,11 +26,15 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-const cpUpload = upload.fields([{ name: "rcPhoto" }]);
+const cpUpload = upload.fields([
+  { name: "rcPhoto" },
+  { name: "paymentScreenshot" },
+]);
 
 router
   .route("/")
   .get(authMiddleware)
   .post(cpUpload, authMiddleware, rcDetailsController);
 
+router.route("/:searchId").get(authMiddleware, rcDetailsDashboard);
 module.exports = router;

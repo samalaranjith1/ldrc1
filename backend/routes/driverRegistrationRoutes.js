@@ -4,6 +4,8 @@ const asyncWrapper = require("../middleware/async");
 
 const {
   driverRegistration,
+  getDriverDetails,
+  updateDriverDetails,
 } = require("../controllers/driverRegistrationController");
 
 const { uploadProductImage } = require("../controllers/uploadsController");
@@ -38,6 +40,7 @@ router.route("/").get(authMiddleware).post(
   cpUpload,
   authMiddleware,
   driverRegistration
+  // )
   // asyncWrapper(async (req, res) => {
   //   const aadharPhoto = await cloudinary.uploader.upload(
   //     req.files.aadharPhoto[0].path,
@@ -74,6 +77,14 @@ router.route("/").get(authMiddleware).post(
   //   return res.send("aadharPhotoUrl");
   // })
 );
+router
+  .route("/")
+  .get(authMiddleware)
+  .post(cpUpload, authMiddleware, driverRegistration);
+router
+  .route("/:searchId")
+  .get(authMiddleware, getDriverDetails)
+  .patch(cpUpload, authMiddleware, updateDriverDetails);
 // router.route("/update").post(authSignup);
 // router.route("/delete").post(authSignup);
 
