@@ -5,7 +5,7 @@ import { Table } from "react-bootstrap";
 
 const TicketStatusTrackerTable = ({ tickets, onDelete, onOpen }) => {
   return (
-    <Table striped bordered hover>
+    <Table striped bordered hover responsive>
       <thead>
         <tr>
           <th>Ticket ID</th>
@@ -61,11 +61,16 @@ const Ticket = ({ ticket, onEdit }) => {
   };
 
   const handleAddCommentClick = async () => {
-    await setEditedTicket((prevTicket) => ({
+    setEditedTicket((prevTicket) => ({
       ...prevTicket,
       comments: [...prevTicket.comments, newComment],
     }));
-    await handleSaveClick();
+    setNewComment({
+      author: "customer", //need to get role from database,
+      icon: "C", //need to getfrom database
+      msg: "",
+    });
+    handleSaveClick();
   };
   const handleEditClick = () => {
     setEditMode(true);
@@ -153,11 +158,13 @@ const Ticket = ({ ticket, onEdit }) => {
                   {ticket.comments &&
                     ticket.comments.map((comment) => (
                       <>
-                        <Comment
-                          key={ticket.id}
-                          comment={comment}
-                          // onEdit={comment}
-                        />
+                        {comment.msg && (
+                          <Comment
+                            key={ticket.id}
+                            comment={comment}
+                            // onEdit={comment}
+                          />
+                        )}
                       </>
                     ))}
                 </div>
@@ -197,14 +204,14 @@ const Comment = ({ comment, index }) => {
   return (
     <Card>
       <Card.Body>
-        {
+        {comment.msg && (
           <li key={index}>
             <strong>
               {comment.author} ({comment.icon}):
             </strong>
             {comment.msg}
           </li>
-        }
+        )}
       </Card.Body>
     </Card>
   );
@@ -252,6 +259,29 @@ const TicketsTracker = () => {
     },
   ]);
 
+  useEffect(() => {
+    console.log("tickets updated");
+    const newTicketsData = tickets.map((ticket) => {
+      const newComments = [];
+      const ticketComments =
+        ticket.comments &&
+        ticket.comments.map((comment) => {
+          if (comment.msg) {
+            newComments.push(comment);
+          }
+        });
+      const newTicket = { ...ticket, comments: newComments };
+      return newTicket;
+    });
+    // if (JSON.stringify(tickets) === JSON.stringify(newTicketsData)) {
+    //   console.log("newTicketsData");
+    // } else {
+    //   console.log("hi");
+    // }
+
+    //we can push updated ticket details to the server i.e newTicketsData
+  }, [tickets]);
+
   const [openedTickets, setOpenedTickets] = useState();
   const handleDelete = (ticketId) => {
     const updatedTickets = tickets.filter((ticket) => ticket.id !== ticketId);
@@ -269,11 +299,14 @@ const TicketsTracker = () => {
     setShowModal(true);
   };
   const handleUpdateTicket = (updatedTicket) => {
-    console.log(updatedTicket);
     const updatedTickets = tickets.map((ticket) =>
       ticket.id === updatedTicket.id ? { ...ticket, ...updatedTicket } : ticket
     );
     setTickets(updatedTickets);
+    const updatedOpenedTickets = openedTickets.map((ticket) =>
+      ticket.id === updatedTicket.id ? { ...ticket, ...updatedTicket } : ticket
+    );
+    setOpenedTickets(updatedOpenedTickets);
   };
   return (
     <Container>
@@ -284,7 +317,12 @@ const TicketsTracker = () => {
         onOpen={handleShowModal}
       />
 
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal
+        show={showModal}
+        onHide={handleCloseModal}
+        fullscreen={false}
+        size="lg"
+      >
         {openedTickets &&
           openedTickets.map((ticket) => (
             <>
