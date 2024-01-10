@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Container, Button, Modal, Form, Card } from "react-bootstrap";
 
 import { Table } from "react-bootstrap";
-
+import axios from "axios";
 const TicketStatusTrackerTable = ({ tickets, onDelete, onOpen }) => {
   return (
     <Table striped bordered hover responsive>
@@ -217,7 +217,31 @@ const Comment = ({ comment, index }) => {
   );
 };
 
-const TicketsTracker = () => {
+const TicketsTracker = ({ searchId }) => {
+  const handleGetData = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/contactus/${searchId}`,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // setTickets(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (searchId) {
+      handleGetData();
+    }
+  }, []);
+
   const [showModal, setShowModal] = useState(false);
 
   const [tickets, setTickets] = useState([

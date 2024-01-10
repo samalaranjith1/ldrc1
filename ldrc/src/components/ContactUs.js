@@ -10,6 +10,7 @@ import Modal from "react-bootstrap/Modal";
 import AuthLogin from "./AuthLogin";
 import { jwtDecode } from "jwt-decode";
 import TicketsTracker from "./TicketsTracker";
+import axios from "axios";
 
 function ContactUs() {
   const [label, setLabel] = useState(false);
@@ -18,7 +19,13 @@ function ContactUs() {
     email: "",
     phoneNumber: "",
     subject: "",
-    message: "",
+    description: "",
+    comments: [{ author: "", msg: "", icon: "" }],
+    status: "",
+    assignedTo: "",
+    assignedBy: "",
+    extraInput2: "",
+    extraInput3: "",
   });
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,19 +38,44 @@ function ContactUs() {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (
       formData.name &&
       formData.email &&
       formData.phoneNumber &&
-      formData.message
+      formData.description
     ) {
       if (
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(formData.email)
       ) {
         if (/(0|91)?[6-9][0-9]{9}/.test(formData.phoneNumber)) {
           console.log(formData);
+
+          try {
+            await axios
+              .post("http://localhost:8080/contactus/", {
+                formData,
+              })
+              .then(async (res) => {
+                console.log(res);
+                if (res.data == "exist") {
+                  if (alert("Details submitted,please wait for confirmation")) {
+                  } else {
+                    handleShow();
+                  }
+                } else if (res.data === "notexist") {
+                  alert("Details submitted,please wait for confirmation");
+                  alert("User registration successful, please login");
+                }
+              })
+              .catch((error) => {
+                alert("wrong details");
+                console.log(error.stack.message);
+              });
+          } catch (error) {
+            console.log("Error occured signup catch block" + error);
+          }
         } else {
           setLabel(true);
           alert("Plase enter proper phone number");
@@ -149,7 +181,7 @@ function ContactUs() {
               </FormGroup>
               <div style={{ padding: "2px" }}></div>
               <Form.Group>
-                {label && <FormLabel>Message</FormLabel>}
+                {label && <FormLabel>Subject</FormLabel>}
                 <Form.Control
                   type="text"
                   placeholder="subject"
@@ -161,15 +193,15 @@ function ContactUs() {
               </Form.Group>
               <div style={{ padding: "2px" }}></div>
               <Form.Group>
-                {label && <FormLabel>Message</FormLabel>}
+                {label && <FormLabel>Description</FormLabel>}
                 <Form.Control
                   as="textarea"
                   rows={5}
                   type="textarea"
-                  placeholder="message"
-                  id="message"
-                  name="message"
-                  value={formData.message}
+                  placeholder="description"
+                  id="description"
+                  name="description"
+                  value={formData.description}
                   onChange={handleChange}
                 />
               </Form.Group>

@@ -124,7 +124,7 @@ function RCDetailsDashboard({ searchId }) {
               <br />
               <strong>Amount:</strong> {item.amount}
               <br />
-              <strong>UPI Address:</strong> {item.upiAddress}
+              <strong>UPI Address:</strong> {item.upiAddress}y
               <br />
               <strong>Payment Way:</strong> {item.paymentWay}
               <br />

@@ -38,7 +38,7 @@ const Search = () => {
   };
 
   return (
-    <Container>
+    <Container className="container-sm">
       <div
         style={{
           display: "flex",
