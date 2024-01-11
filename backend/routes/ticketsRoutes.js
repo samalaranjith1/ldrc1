@@ -14,7 +14,7 @@ router.route("/").post(addTicket);
 router.route("/:searchId").get(authMiddleware, getUserTickets);
 
 router
-  .route("/:id")
+  .route("/:userEmail/:ticketId")
   .get(authMiddleware, getTicketDetails)
   .patch(authMiddleware, updateTicket)
   .delete(authMiddleware, deleteTicket);

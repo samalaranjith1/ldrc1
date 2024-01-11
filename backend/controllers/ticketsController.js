@@ -38,10 +38,19 @@ const getTicketDetails = asyncWrapper(async (req, res, next) => {
 });
 
 const updateTicket = asyncWrapper(async (req, res, next) => {
-  const { id } = req.params;
-  const data = { ...req.body.formData };
+  const { userEmail, ticketId } = req.params;
+  const data = req.body;
+  const data1 = { ...data };
+  const newComments = [];
+  data.comments.map((comment) => {
+    if (comment.msg.length > 0) {
+      newComments.push(comment);
+    }
+  });
+  data1.comments = [];
+  data1.comments = newComments;
 
-  const task = await tickets.findOneAndUpdate({ _id: id }, req.body, {
+  const task = await tickets.findOneAndUpdate({ _id: ticketId }, data1, {
     new: true,
     runValidators: true,
     returnOriginal: false,
@@ -56,8 +65,8 @@ const updateTicket = asyncWrapper(async (req, res, next) => {
 });
 
 const deleteTicket = asyncWrapper(async (req, res, next) => {
-  const { id } = req.params;
-  const task = await tickets.findOneAndDelete({ _id: id });
+  const { ticketId } = req.params;
+  const task = await tickets.findOneAndDelete({ _id: ticketId });
   if (!task) {
     return next(createCustomError(`No task with ticket id : ${id}`, 404));
   }
